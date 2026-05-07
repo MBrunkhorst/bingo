@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Borus Bingo</title>
+        <style>
+            :root {
+                --bg: #f6f7fb;
+                --card: #ffffff;
+                --ink: #1f2937;
+                --muted: #6b7280;
+                --line: #dbe3ef;
+                --accent: #7c3aed;
+                --accent-soft: #f3e8ff;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                min-height: 100vh;
+                font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+                background: radial-gradient(circle at top, #ffffff 0%, var(--bg) 65%);
+                color: var(--ink);
+                display: grid;
+                place-items: center;
+                padding: 24px;
+            }
+
+            .wrap {
+                width: min(980px, calc(100vw - 24px));
+            }
+
+            h1 {
+                margin: 0 0 8px;
+                text-align: center;
+                font-size: clamp(2rem, 4vw, 3.5rem);
+                letter-spacing: 0.02em;
+            }
+
+            .sub {
+                text-align: center;
+                color: var(--muted);
+                margin: 0 0 20px;
+                font-size: 0.98rem;
+            }
+
+            .toolbar {
+                display: flex;
+                justify-content: center;
+                gap: 12px;
+                margin-bottom: 16px;
+                flex-wrap: wrap;
+            }
+
+            button {
+                border: 0;
+                background: var(--accent);
+                color: white;
+                padding: 10px 16px;
+                border-radius: 999px;
+                cursor: pointer;
+                font-weight: 700;
+                box-shadow: 0 10px 25px rgba(124, 58, 237, 0.18);
+            }
+
+            button.secondary {
+                background: white;
+                color: var(--accent);
+                border: 1px solid #d8c8f7;
+                box-shadow: none;
+            }
+
+            .board {
+                display: grid;
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+                gap: 10px;
+                background: rgba(255, 255, 255, 0.65);
+                padding: 12px;
+                border-radius: 28px;
+                border: 1px solid rgba(219, 227, 239, 0.9);
+                box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+            }
+
+            .tile {
+                aspect-ratio: 1 / 1;
+                min-height: 0;
+                background: var(--card);
+                border: 1px solid var(--line);
+                border-radius: 20px;
+                padding: clamp(6px, 1vw, 14px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                font-size: clamp(0.55rem, 1.35vw, 0.95rem);
+                line-height: 1.2;
+                cursor: pointer;
+                user-select: none;
+                transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+                overflow: hidden;
+                position: relative;
+                word-break: break-word;
+                hyphens: auto;
+            }
+
+            .tile:hover {
+                transform: translateY(-2px);
+                border-color: #c9b6f5;
+                box-shadow: 0 12px 20px rgba(124, 58, 237, 0.08);
+            }
+
+            .tile.marked {
+                background: linear-gradient(180deg, var(--accent-soft), #fff);
+                border-color: #c084fc;
+                box-shadow: inset 0 0 0 2px rgba(124, 58, 237, 0.08);
+            }
+
+            .tile.free {
+                background: linear-gradient(180deg, #ede9fe, #ffffff);
+                font-weight: 800;
+                color: var(--accent);
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+            }
+
+
+
+            .footer {
+                text-align: center;
+                color: var(--muted);
+                font-size: 0.9rem;
+                margin-top: 14px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="wrap">
+            <h1>Borus Bingo</h1>
+
+            <div class="toolbar">
+                <button id="reshuffleBtn" type="button">Reshuffle board</button>
+                <button id="clearBtn" class="secondary" type="button">Clear marks</button>
+            </div>
+
+            <div id="board" class="board" role="group" aria-label="Bingo board"></div>
+
+        </div>
+
+        <script>
+            const meetingSquares = [
+                "Someone struggles with screen sharing",
+                "Larren is asked a technical question but wasn't paying attention",
+                "Pal complains about a critical feature that Torus still doesn't have",
+                "Flanders calls Mess out",
+                "Louis tries to tell Flanders to wrap it up and Flanders ignores Louis",
+                "Stan continues to be the most precious person on the planet",
+                "Bug in sprint demo",
+                "Mess doesn't pay attention when asked a question",
+                "Jim complains about hating UI/UX designers",
+                "Flanders rambles on",
+                "Bavid responds to a question with a one word response",
+                "Mess snoops on a meeting",
+                "Mess or Jia have to turn off their camera from laughing",
+
+                "Someone says, 'Can everyone see my screen?'",
+                "Larren is late",
+                "Someone accidentally talks while muted",
+                "A dog or cat makes a surprise appearance",
+                "Someone says, 'Let me share my screen real quick'",
+                "The agenda gets rewritten during the meeting",
+                "A discussion could have been an email",
+                "Someone asks a question that was already answered",
+                "Audio cuts out for a moment",
+                "Someone says, 'I have a hard stop'",
+                "A calendar invite changes at the last minute",
+                "Someone forgets to unmute for several seconds"
+            ];
+
+            const board = document.getElementById('board');
+            const reshuffleBtn = document.getElementById('reshuffleBtn');
+            const clearBtn = document.getElementById('clearBtn');
+
+            function shuffle(array) {
+                const arr = [...array];
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
+            }
+
+            function buildBoard() {
+                board.innerHTML = '';
+
+                const picked = shuffle(meetingSquares).slice(0, 24);
+                const tiles = [
+                    ...picked.slice(0, 12),
+                    { text: 'FREE SPACE', free: true },
+                    ...picked.slice(12)
+                ];
+
+                tiles.forEach((item) => {
+                    const tile = document.createElement('div');
+                    const isFree = typeof item === 'object' && item.free;
+
+                    tile.className = 'tile' + (isFree ? ' free marked' : '');
+                    tile.setAttribute('role', 'button');
+                    tile.setAttribute('tabindex', '0');
+
+                    if (isFree) {
+                        tile.textContent = 'FREE SPACE';
+                    } else {
+                        tile.textContent = item;
+                    }
+
+                    tile.addEventListener('click', () => {
+                        if (!isFree) tile.classList.toggle('marked');
+                    });
+
+                    tile.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            if (!isFree) tile.classList.toggle('marked');
+                        }
+                    });
+
+                    board.appendChild(tile);
+                });
+            }
+
+            reshuffleBtn.addEventListener('click', buildBoard);
+            clearBtn.addEventListener('click', () => {
+                document.querySelectorAll('.tile:not(.free)').forEach(tile => tile.classList.remove('marked'));
+            });
+
+            buildBoard();
+        </script>
+    </body>
+
+</html>
