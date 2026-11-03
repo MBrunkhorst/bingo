@@ -1,6 +1,6 @@
 const surpriseSquare = 'Larren builds a surprise slide deck';
 const meetingSquares = [
-  'Someone struggles with screen sharing',
+  'Boss man talks about AI',
   "Larren is asked a technical question but wasn't paying attention",
   "Pal complains about a critical feature that Torus still doesn't have",
   'Flanders calls Mess out',
