@@ -21,7 +21,7 @@ const meetingSquares = [
   'The agenda gets rewritten during the meeting',
   'A discussion could have been an email',
   'Someone asks a question that was already answered',
-  'Audio cuts out for a moment',
+  'Laura publicly shames us',
   "Someone says, 'I have a hard stop'",
   'A calendar invite changes at the last minute',
   'Someone forgets to unmute for several seconds'
