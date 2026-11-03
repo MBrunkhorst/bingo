@@ -38,6 +38,19 @@ const lines = [
 let completedLines = new Set();
 let celebrationTimer;
 let confettiTimer;
+const winMessages = [
+  'It’s fine. Everything’s fine.',
+  'This is fine. The meeting is still happening.',
+  'Another day, another “quick sync.”',
+  'I am once again asking for this meeting to end.',
+  'Task failed successfully.',
+  'Congratulations. Your reward is more meeting.',
+  'There is no bingo. Only calendar invites.',
+  'Guess I’ll just keep nodding.',
+  'The horrors persist. So do the action items.',
+  'We live in a society. With recurring meetings.'
+];
+let remainingWinMessages = [];
 function shuffle(array) {
   const copy = [...array];
   for (let i = copy.length - 1; i > 0; i--) {
@@ -52,10 +65,10 @@ function dismissCelebration() {
   celebration.hidden = true;
   confetti.replaceChildren();
 }
-function celebrate(total) {
+function celebrate() {
   dismissCelebration();
-  document.getElementById('celebrationMessage').textContent = total === 1
-    ? 'A meeting well spent.' : `${total} lines! You’re on a roll.`;
+  if (!remainingWinMessages.length) remainingWinMessages = shuffle(winMessages);
+  document.getElementById('celebrationMessage').textContent = remainingWinMessages.pop();
   celebration.hidden = false;
   if (!reducedMotion.matches) {
     const colors = ['#7053b3', '#c4ace7', '#d6b663', '#98ae8a', '#e6a8a1'];
@@ -90,7 +103,7 @@ function updateBoard(announce = false) {
   });
   completedLines = nextLines;
   const count = tiles.filter(tile => tile.classList.contains('marked')).length;
-  if (newLines.length) celebrate(nextLines.size);
+  if (newLines.length) celebrate();
   else if (!nextLines.size) dismissCelebration();
   if (announce) document.getElementById('status').textContent = `${count} of 25 squares marked. ${nextLines.size} bingo lines.`;
 }
