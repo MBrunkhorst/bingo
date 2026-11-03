@@ -119,7 +119,7 @@ function buildBoard() {
     tile.type = 'button';
     tile.className = text === null ? 'tile free marked' : 'tile';
     if (text === null) {
-      tile.innerHTML = '<span class="free-star" aria-hidden="true">✳</span><span class="free-title">Free space</span><span class="free-note">on the house</span>';
+      tile.innerHTML = '<span class="free-star" aria-hidden="true">✳</span><span class="free-title">Free space</span><span class="free-note">you’ve suffered enough</span>';
       tile.setAttribute('aria-label', 'Free space, always marked');
       tile.setAttribute('aria-disabled', 'true');
     } else {
