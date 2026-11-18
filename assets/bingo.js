@@ -27,7 +27,11 @@ const meetingTypes = {
       'Larren is asked a technical question but wasn’t paying attention',
       'Stan points a ticket different from everyone else',
       'Mess snoops on a meeting',
-      'Bavid’s big sigh'
+      'Bavid’s big sigh',
+      'the dev team tries to redesign a feature without any context',
+      'literally everyone is confused by a ticket',
+      'Anders clears his throat without muting',
+      'Mess or Jia turns off camera from laughing'
     ]
   },
   product: {
