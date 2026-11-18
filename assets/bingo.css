@@ -3,13 +3,74 @@
   --bg:#f8f6f1;
   --ink:#292835;
   --muted:#77747f;
-  --purple:#7053b3;
-  --purple-dark:#513a89;
-  --lavender:#eee7fa;
+  --accent:#7053b3;
+  --accent-dark:#513a89;
   --line:#e4dfeb;
+  --border:#ded5ec;
+  --soft:#f4effb;
+  --heading:#eee7f7;
+  --marked:#eee7fa;
+  --free:#e8def7;
+  --note:#8a75aa;
+  --win:#dcd0ef;
+  --focus:#9b81c4;
+  --hover-marked:#e2d5f4;
+  --pulse:#c6b2e5;
   font-family:Arial,Helvetica,sans-serif;
   color:var(--ink);
   background:var(--bg);
+}
+
+body[data-meeting="product"] {
+  --accent:#276cae;
+  --accent-dark:#174b7d;
+  --line:#d8e4ee;
+  --border:#c8daec;
+  --soft:#f0f6fc;
+  --heading:#e1edfa;
+  --marked:#e3effb;
+  --free:#d4e6f8;
+  --note:#527493;
+  --win:#c5def5;
+  --focus:#6496c5;
+  --hover-marked:#d4e5f6;
+  --pulse:#a6cbed;
+}
+
+.meeting-tabs {
+  display:flex;
+  gap:8px;
+  margin-bottom:16px;
+}
+
+.meeting-tab {
+  flex:1;
+  min-height:48px;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:white;
+  color:var(--muted);
+  font-weight:700;
+  font-size:14px;
+}
+
+.meeting-tab[data-meeting="dev"] { --tab-color:#7053b3; }
+.meeting-tab[data-meeting="product"] { --tab-color:#276cae; }
+.meeting-tab::before {
+  content:'';
+  display:inline-block;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--tab-color);
+  margin-right:8px;
+}
+.meeting-tab[aria-selected="true"] {
+  background:var(--heading);
+  color:var(--accent-dark);
+  border-color:var(--accent);
+  box-shadow:inset 0 -3px var(--accent);
 }
 
 * {
@@ -33,7 +94,7 @@ button {
 }
 
 button:focus-visible,a:focus-visible {
-  outline:3px solid #ad72d1;
+  outline:3px solid var(--focus);
   outline-offset:4px;
 }
 
@@ -66,21 +127,9 @@ button:focus-visible,a:focus-visible {
   font-weight:700;
 }
 
-.board-label>span:first-child {
+.board-label>span[aria-hidden] {
   font-size:20px;
-  color:var(--purple);
-}
-
-.card-tag {
-  font-size:8px;
-  letter-spacing:1px;
-  color:#8a7d62;
-  background:#f4f0e4;
-  border:1px solid #eae3d0;
-  border-radius:4px;
-  padding:5px 6px;
-  margin-left:3px;
-  white-space:nowrap;
+  color:var(--accent);
 }
 
 .actions {
@@ -99,10 +148,10 @@ button:focus-visible,a:focus-visible {
 }
 
 .shuffle-button {
-  border:1px solid #ddd3ed;
+  border:1px solid var(--border);
   border-radius:7px;
-  background:#f4effb;
-  color:var(--purple-dark);
+  background:var(--soft);
+  color:var(--accent-dark);
   padding:9px 12px;
   font-size:12px;
   font-weight:600;
@@ -114,7 +163,7 @@ button:focus-visible,a:focus-visible {
 }
 
 .shuffle-button:hover {
-  background:#e8def6;
+  background:var(--hover-marked);
 }
 
 .shuffle-button svg {
@@ -124,23 +173,23 @@ button:focus-visible,a:focus-visible {
 
 .card {
   margin:0 20px 20px;
-  border:1px solid #ded5ec;
+  border:1px solid var(--border);
   border-radius:10px;
   overflow:hidden;
-  background:#f7f4fb;
+  background:var(--soft);
 }
 
 .column-headings {
   display:grid;
   grid-template-columns:repeat(5,1fr);
-  background:#eee7f7;
-  border-bottom:1px solid #ded5ec;
+  background:var(--heading);
+  border-bottom:1px solid var(--border);
 }
 
 .column-headings span {
   text-align:center;
   padding:11px;
-  color:var(--purple);
+  color:var(--accent);
   font-family:Georgia,serif;
   font-weight:bold;
   font-size:23px;
@@ -150,7 +199,7 @@ button:focus-visible,a:focus-visible {
   display:grid;
   grid-template-columns:repeat(5,minmax(0,1fr));
   gap:1px;
-  background:#e5dfee;
+  background:var(--border);
 }
 
 .tile {
@@ -185,15 +234,15 @@ button:focus-visible,a:focus-visible {
   top:5px;
   font-size:12px;
   font-weight:bold;
-  color:var(--purple);
+  color:var(--accent);
   opacity:0;
   transform:scale(.3);
   transition:opacity .16s,transform .2s;
 }
 
 .tile.marked {
-  background:#eee7fa;
-  color:#644a96;
+  background:var(--marked);
+  color:var(--accent-dark);
 }
 
 .tile.marked::after {
@@ -202,10 +251,10 @@ button:focus-visible,a:focus-visible {
 }
 
 .tile.free {
-  background:#e8def7;
+  background:var(--free);
   flex-direction:column;
   gap:4px;
-  color:var(--purple-dark);
+  color:var(--accent-dark);
   cursor:default;
 }
 
@@ -225,12 +274,12 @@ button:focus-visible,a:focus-visible {
   font-family:Georgia,serif;
   font-style:italic;
   font-size:12px;
-  color:#8a75aa;
+  color:var(--note);
 }
 
 .tile.winning {
-  background:#dcd0ef;
-  box-shadow:inset 0 0 0 2px #9b81c4;
+  background:var(--win);
+  box-shadow:inset 0 0 0 2px var(--focus);
 }
 
 .tile.pop {
@@ -266,10 +315,10 @@ button:focus-visible,a:focus-visible {
   display:flex;
   align-items:center;
   gap:15px;
-  background:var(--purple-dark);
+  background:var(--accent-dark);
   color:white;
   padding:17px 20px;
-  border:1px solid #a48bca;
+  border:1px solid var(--focus);
   border-radius:14px;
   box-shadow:0 10px 35px #39235440;
   animation:toast-in .4s ease-out;
@@ -293,7 +342,7 @@ button:focus-visible,a:focus-visible {
 .celebration div>span {
   display:block;
   font-size:12px;
-  color:#e1d5f0;
+  color:var(--heading);
   margin-top:4px;
 }
 
@@ -301,7 +350,7 @@ button:focus-visible,a:focus-visible {
   margin-left:auto;
   background:none;
   border:0;
-  color:#eee4ff;
+  color:var(--heading);
   font-size:24px;
   min-width:36px;
   min-height:44px;
@@ -328,23 +377,23 @@ button:focus-visible,a:focus-visible {
 
 @media(hover:hover) {
   .tile:not(.free):hover {
-    background:#f5f0fc;
-    box-shadow:inset 0 0 0 2px #c7b5df;
+    background:var(--soft);
+    box-shadow:inset 0 0 0 2px var(--focus);
   }
   .tile.marked:hover {
-    background:#e2d5f4;
+    background:var(--hover-marked);
   }
 }
 
 @keyframes tile-pop {
   50% {
-    box-shadow:inset 0 0 0 4px #bba3dc;
+    box-shadow:inset 0 0 0 4px var(--focus);
   }
 }
 
 @keyframes win-pulse {
   50% {
-    background:#c6b2e5;
+    background:var(--pulse);
   }
 }
 
@@ -400,9 +449,6 @@ button:focus-visible,a:focus-visible {
   .board-label {
     font-size:12px;
     gap:6px;
-  }
-  .card-tag {
-    display:none;
   }
   .actions {
     gap:12px;

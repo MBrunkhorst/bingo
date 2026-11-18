@@ -1,31 +1,62 @@
-const surpriseSquare = 'Larren builds a surprise slide deck';
-const meetingSquares = [
-  'Boss man talks about AI',
-  "Larren is asked a technical question but wasn't paying attention",
-  "Pal complains about a critical feature that Torus still doesn't have",
-  'Flanders calls Mess out',
-  'Louis tries to tell Flanders to wrap it up and Flanders ignores Louis',
-  'Stan continues to be the most precious person on the planet',
-  'Bug in sprint demo',
-  "Mess doesn't pay attention when asked a question",
-  'Jim complains about hating UI/UX designers',
-  'Flanders rambles on',
-  'Bavid responds to a question with a one word response',
-  'Mess snoops on a meeting',
-  'Mess or Jia have to turn off their camera from laughing',
-  surpriseSquare,
-  'Larren is late',
+const genericSquares = [
   'Someone accidentally talks while muted',
-  'A dog or cat makes a surprise appearance',
-  "Someone says, 'Let me share my screen real quick'",
-  'Stan points a ticket different than anyone else',
-  'Louis talks to herself because no one answers her',
+  'Someone says, “Can everyone see my screen?”',
   'Someone asks a question that was already answered',
-  'Laura publicly shames us',
-  "Someone says, 'I have a hard stop'",
+  'Someone says, “I have a hard stop”',
   'A calendar invite changes at the last minute',
-  'Someone forgets to unmute for several seconds'
+  'Someone says, “Let’s take this offline”',
+  'Someone joins the wrong meeting',
+  'Someone has to repeat themselves',
+  'The meeting runs over time',
+  'Someone says, “You’re on mute”'
 ];
+const meetingTypes = {
+  dev: {
+    label: 'Dev meeting',
+    squares: [
+      'Larren rambles',
+      'Flanders rambles',
+      'Bavid responds to a question with one word',
+      'Louis talks to herself because no one responds',
+      'Dog or cat appearance',
+      'Someone complains about UI/UX designers',
+      'Bug in sprint demo',
+      'Surprise slide deck',
+      'Stan continues to be the most precious human on the planet',
+      'Flanders calls Mess out',
+      'Larren is asked a technical question but wasn’t paying attention',
+      'Stan points a ticket different from everyone else',
+      'Mess snoops on a meeting',
+      'Bavid’s big sigh'
+    ]
+  },
+  product: {
+    label: 'Product meeting',
+    squares: [
+      'Someone says packet',
+      'Boss man talks about AI',
+      'Nimoy is mentioned',
+      'Larren rambles',
+      'Floss turns his camera off',
+      'Jia and Mess don’t pay attention',
+      'Norm is later than Darren',
+      'Put it on the roadmap',
+      'Mess or Jia turn cameras off from laughing',
+      'Dog or cat appearance',
+      'Laura publically shames us',
+      'Surprise slide deck',
+      'Someone complains about a critical feature that Torus STILL doesn’t have',
+      'Product knowledge base',
+      'Larren is asked a technical question but wasn’t paying attention',
+      'Nimoy knows the product vision before the product team',
+      'Make a skill for that',
+      'someone says “quarterly”',
+      'someone asks for the roadmap to be reviewed'
+    ]
+  }
+};
+let activeMeeting = 'dev';
+const meetingStates = {};
 const board = document.getElementById('board');
 const celebration = document.getElementById('celebration');
 const confetti = document.getElementById('confetti');
@@ -71,7 +102,7 @@ function celebrate() {
   document.getElementById('celebrationMessage').textContent = remainingWinMessages.pop();
   celebration.hidden = false;
   if (!reducedMotion.matches) {
-    const colors = ['#7053b3', '#c4ace7', '#d6b663', '#98ae8a', '#e6a8a1'];
+    const colors = [getComputedStyle(document.body).getPropertyValue('--accent').trim(), '#d6b663', '#98ae8a', '#e6a8a1'];
     const pieces = document.createDocumentFragment();
     for (let i = 0; i < 65; i++) {
       const piece = document.createElement('i');
@@ -83,7 +114,7 @@ function celebrate() {
   }
   celebrationTimer = setTimeout(dismissCelebration, 5500);
 }
-function updateBoard(announce = false) {
+function updateBoard(announce = false, celebrateNew = true) {
   const tiles = [...board.children];
   const nextLines = new Set();
   lines.forEach((line, index) => {
@@ -103,21 +134,28 @@ function updateBoard(announce = false) {
   });
   completedLines = nextLines;
   const count = tiles.filter(tile => tile.classList.contains('marked')).length;
-  if (newLines.length) celebrate();
+  meetingStates[activeMeeting].marked = new Set(tiles.flatMap((tile, index) => tile.classList.contains('marked') ? [index] : []));
+  if (newLines.length && celebrateNew) celebrate();
   else if (!nextLines.size) dismissCelebration();
   if (announce) document.getElementById('status').textContent = `${count} of 25 squares marked. ${nextLines.size} bingo lines.`;
 }
 function buildBoard() {
+  const custom = meetingTypes[activeMeeting].squares;
+  const picked = shuffle([...custom, ...shuffle(genericSquares).slice(0, 24 - custom.length)]);
+  picked.splice(12, 0, null);
+  meetingStates[activeMeeting] = { squares: picked, marked: new Set([12]) };
+  renderBoard();
+}
+function renderBoard() {
   dismissCelebration();
   completedLines = new Set();
-  // Keep the new custom square on every card; vary the remaining 23 squares.
-  const picked = shuffle([surpriseSquare, ...shuffle(meetingSquares.filter(text => text !== surpriseSquare)).slice(0, 23)]);
-  picked.splice(12, 0, null);
+  const state = meetingStates[activeMeeting];
+  const picked = state.squares;
   board.replaceChildren();
   picked.forEach((text, index) => {
     const tile = document.createElement('button');
     tile.type = 'button';
-    tile.className = text === null ? 'tile free marked' : 'tile';
+    tile.className = 'tile' + (text === null ? ' free' : '') + (state.marked.has(index) ? ' marked' : '');
     if (text === null) {
       tile.innerHTML = '<span class="free-star" aria-hidden="true">✳</span><span class="free-title">Free space</span><span class="free-note">you’ve suffered enough</span>';
       tile.setAttribute('aria-label', 'Free space, always marked');
@@ -137,8 +175,38 @@ function buildBoard() {
     }
     board.appendChild(tile);
   });
-  updateBoard();
+  updateBoard(false, false);
 }
+function selectMeeting(type) {
+  activeMeeting = type;
+  document.body.dataset.meeting = type;
+  document.getElementById('boardTitle').textContent = meetingTypes[type].label + ' bingo';
+  document.getElementById('meetingPanel').setAttribute('aria-labelledby', type + 'Tab');
+  document.querySelectorAll('[role="tab"]').forEach(tab => {
+    const selected = tab.dataset.meeting === type;
+    tab.setAttribute('aria-selected', String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+  });
+  if (meetingStates[type]) renderBoard();
+  else buildBoard();
+  document.getElementById('status').textContent = meetingTypes[type].label + ' card selected.';
+}
+const meetingTabs = [...document.querySelectorAll('[role="tab"]')];
+meetingTabs.forEach((tab, index) => {
+  tab.addEventListener('click', () => selectMeeting(tab.dataset.meeting));
+  tab.addEventListener('keydown', event => {
+    let next;
+    if (event.key === 'ArrowRight') next = (index + 1) % meetingTabs.length;
+    if (event.key === 'ArrowLeft') next = (index - 1 + meetingTabs.length) % meetingTabs.length;
+    if (event.key === 'Home') next = 0;
+    if (event.key === 'End') next = meetingTabs.length - 1;
+    if (next !== undefined) {
+      event.preventDefault();
+      meetingTabs[next].focus();
+      selectMeeting(meetingTabs[next].dataset.meeting);
+    }
+  });
+});
 document.getElementById('reshuffleBtn').addEventListener('click', () => {
   buildBoard();
   document.getElementById('status').textContent = 'New card shuffled. Free space is marked. Let’s play!';
@@ -153,4 +221,4 @@ document.getElementById('dismissCelebration').addEventListener('click', dismissC
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape') dismissCelebration();
 });
-buildBoard();
+selectMeeting('dev');
